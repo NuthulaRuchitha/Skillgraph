@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 from app.database import driver
 from app.queries import (
@@ -8,7 +9,10 @@ from app.queries import (
     get_skill_company_connections,
     get_related_skills,
     get_skill_to_company_graph,
+    get_job_details,
+    get_job_graph,
 )
+from app.queries import search_jobs
 
 
 app = FastAPI(
@@ -23,6 +27,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -143,6 +148,44 @@ def skill_graph(skill_name: str):
             status_code=503,
             detail="Unable to build graph",
         )
+
+@app.get("/api/jobs/search")
+def search_jobs_endpoint(
+    skill: Optional[str] = Query(default=None),
+    city: Optional[str] = Query(default=None),
+    industry: Optional[str] = Query(default=None),
+    technology: Optional[str] = Query(default=None),
+):
+    return search_jobs(
+        skill_name=skill,
+        city=city,
+        industry=industry,
+        technology=technology,
+    )
+
+@app.get("/api/jobs/{job_id}/graph")
+def job_graph(job_id: str):
+    result = get_job_graph(job_id)
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="Job not found",
+        )
+
+    return result
+
+@app.get("/api/jobs/{job_id}")
+def job_details(job_id: str):
+    result = get_job_details(job_id)
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="Job not found"
+        )
+
+    return result
 
 
 @app.on_event("shutdown")

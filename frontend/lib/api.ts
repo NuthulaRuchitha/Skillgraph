@@ -77,3 +77,118 @@ export async function getSkillCompanies(
 
   return data.connections;
 }
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  name: string;
+}
+
+export interface GraphRelationship {
+  source: string;
+  target: string;
+  type: string;
+}
+
+export interface SkillGraph {
+  nodes: GraphNode[];
+  relationships: GraphRelationship[];
+}
+
+export async function getSkillGraph(
+  skill: string
+): Promise<SkillGraph> {
+  const response = await fetch(
+    `${API_URL}/api/graph/${encodeURIComponent(skill)}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch graph");
+  }
+
+  return response.json();
+}
+
+export interface Job {
+  job_id: string;
+  job_title: string;
+  company: string;
+  city: string | null;
+  industry: string | null;
+}
+
+export async function searchJobs(params: {
+  skill?: string;
+  city?: string;
+  industry?: string;
+  technology?: string;
+}): Promise<Job[]> {
+  const searchParams = new URLSearchParams();
+
+  if (params.skill) {
+    searchParams.set("skill", params.skill);
+  }
+
+  if (params.city) {
+    searchParams.set("city", params.city);
+  }
+
+  if (params.industry) {
+    searchParams.set("industry", params.industry);
+  }
+
+  if (params.technology) {
+    searchParams.set("technology", params.technology);
+  }
+
+  const response = await fetch(
+    `${API_URL}/api/jobs/search?${searchParams.toString()}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to search jobs");
+  }
+
+  return response.json();
+}
+
+export interface JobDetails {
+  job_id: string;
+  job_title: string;
+  company: string;
+  industry: string | null;
+  city: string | null;
+  skills: string[];
+  technologies: string[];
+}
+
+export async function getJobDetails(
+  jobId: string
+): Promise<JobDetails> {
+  const response = await fetch(
+    `${API_URL}/api/jobs/${encodeURIComponent(jobId)}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch job details");
+  }
+
+  return response.json();
+}
+
+export async function getJobGraph(
+  jobId: string
+): Promise<SkillGraph> {
+  const response = await fetch(
+    `${API_URL}/api/jobs/${encodeURIComponent(jobId)}/graph`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch job graph");
+  }
+
+  return response.json();
+}

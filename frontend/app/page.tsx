@@ -14,18 +14,21 @@ import {
   getJobsBySkill,
   getRelatedSkills,
   getSkillCompanies,
+  getSkillGraph,
   type Job,
   type RelatedSkill,
   type CompanyConnection,
+  type SkillGraph,
 } from "@/lib/api";
 
-
+import GraphExplorer from "@/components/GraphExplorer";
 const popularSkills = [
   "Java",
   "Python",
   "React",
   "SQL",
 ];
+import JobSearch from "@/components/JobSearch";
 
 
 export default function Home() {
@@ -38,6 +41,10 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [graph, setGraph] = useState<SkillGraph>({
+    nodes: [],
+    relationships: [],
+  });
 
 
   async function exploreSkill(selectedSkill = skill) {
@@ -53,15 +60,18 @@ export default function Home() {
         jobsResult,
         relatedResult,
         companiesResult,
+        graphResult,
       ] = await Promise.all([
         getJobsBySkill(selectedSkill),
         getRelatedSkills(selectedSkill),
         getSkillCompanies(selectedSkill),
+        getSkillGraph(selectedSkill),
       ]);
 
       setJobs(jobsResult);
       setRelatedSkills(relatedResult);
       setCompanies(companiesResult);
+      setGraph(graphResult);
       setSearchedSkill(selectedSkill);
     } catch {
       setError(
@@ -374,6 +384,26 @@ export default function Home() {
             </div>
 
           </div>
+
+        </div>
+        <div className="mt-10">
+
+          <div className="mb-5">
+            <p className="text-sm text-slate-500">
+              Relationship map
+            </p>
+
+            <h3 className="mt-1 text-2xl font-semibold">
+              How {searchedSkill} connects to jobs and companies
+            </h3>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Explore the relationships stored in the graph database.
+            </p>
+          </div>
+
+          <GraphExplorer graph={graph} />
+          <JobSearch/>
 
         </div>
 
