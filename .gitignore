@@ -1,0 +1,26 @@
+# Backend Python
+backend/venv/
+backend/__pycache__/
+backend/**/*.pyc
+
+# Backend secrets
+backend/.env
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
