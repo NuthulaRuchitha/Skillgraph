@@ -1,0 +1,6 @@
+query_id,query,iterations,min_ms,max_ms,average_ms,median_ms
+Q1,Jobs requiring Java,30,266.377,914.757,347.087,305.984
+Q2,Java jobs in Hyderabad,30,270.275,1292.466,346.051,296.872
+Q3,Java -> Job -> Company -> Industry,30,280.437,401.410,309.598,299.801
+Q4,Skills related to Java,30,274.068,919.598,351.526,317.798
+Q5,Java + Spring Boot,30,278.648,409.358,305.584,293.905
