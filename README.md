@@ -19,6 +19,32 @@ The application models relationships between jobs, skills, technologies, compani
 - FastAPI REST endpoints
 - Next.js frontend
 
+## Live Demo
+
+### Hosted Application
+
+- **Frontend:** https://skillgraph-frontend-mu.vercel.app
+- **Backend API:** https://skillgraph-12y2.onrender.com
+- **API Documentation (Swagger):** https://skillgraph-12y2.onrender.com/docs
+
+### Source Code
+
+- **GitHub Repository:** https://github.com/NuthulaRuchitha/Skillgraph
+
+## Demo Video
+
+A short walkthrough of the SkillGraph application demonstrating:
+
+- Job search by skill
+- Job search with location, industry, and technology filters
+- Job details
+- Related skills
+- Skill-to-company connections
+- Interactive graph exploration
+- Hosted frontend and backend
+
+**Screen Recording:** c:\Users\RUCHITHA\Videos\Screen Recordings\Screen Recording 2026-08-14 103542.mp4
+
 ## Architecture
 
 ```text
@@ -55,6 +81,42 @@ The application models relationships between jobs, skills, technologies, compani
 
 ## Graph Model
 
+## Graph Data Model
+
+```text
+                         ┌──────────────┐
+                         │   Industry   │
+                         └──────▲───────┘
+                                │
+                          OPERATES_IN
+                                │
+                         ┌──────┴───────┐
+                         │   Company    │
+                         └──────▲───────┘
+                                │
+                            POSTED_BY
+                                │
+                         ┌──────┴───────┐
+                         │     Job      │
+                         └──────┬───────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                 │
+       REQUIRES_SKILL    USES_TECHNOLOGY    LOCATED_IN
+              │                 │                 │
+              ▼                 ▼                 ▼
+        ┌──────────┐      ┌────────────┐    ┌──────────┐
+        │  Skill   │      │ Technology │    │ Location │
+        └────┬─────┘      └────────────┘    └──────────┘
+             │
+         RELATED_TO
+             │
+             ▼
+        ┌──────────┐
+        │  Skill   │
+        └──────────┘
+```
+
 ### Node Types
 
 The current graph contains these node labels:
@@ -78,6 +140,29 @@ The graph currently uses:
 | `LOCATED_IN` | A job is located in a location |
 | `OPERATES_IN` | A company operates in an industry |
 | `RELATED_TO` | A skill is related to another skill |
+
+## Seed Data
+
+The repository contains seed data used to populate the CognoDB graph.
+
+The seed data models realistic relationships between:
+
+- Jobs
+- Skills
+- Technologies
+- Companies
+- Industries
+- Locations
+
+The data includes multiple jobs that share skills, technologies, companies, and industries, allowing the application to demonstrate multi-hop graph traversal.
+
+The seed data can be loaded into the CognoDB instance before running the application.
+
+The seed files are located under:
+
+```text
+backend/seed/
+```
 
 ## Example Graph
 
@@ -128,6 +213,8 @@ Software Engineer      TechNova
 
 ### Java jobs in Hyderabad
 
+This query traverses from the `Java` skill to jobs and then to their locations. The location is filtered to `Hyderabad`, demonstrating graph-based filtering across related nodes.
+
 ```cypher
 MATCH (s:Skill {name: "Java"})
       <-[:REQUIRES_SKILL]-(j:Job)
@@ -148,6 +235,8 @@ Software Engineer    Hyderabad
 ```
 
 ### Java → Job → Company → Industry
+
+This is a multi-hop traversal across four entity types. It starts from a skill, finds jobs requiring that skill, follows those jobs to their companies, and then finds the industries in which those companies operate.
 
 ```cypher
 MATCH (s:Skill {name: "Java"})
@@ -276,7 +365,52 @@ Example:
 GET /api/skills/Java/companies
 ```
 
+## Screenshots
+
+### Job Search
+
+Users can search for jobs using skill, city, industry, and technology filters.
+
+![Job Search](docs/screenshots/job-search.png)
+
+### Job Details
+
+Selecting a job displays its location, industry, required skills, and technologies.
+
+![Job Details](docs/screenshots/job-details.png)
+
+### Skill Graph
+
+The interactive graph visualizes relationships between jobs, skills, technologies, companies, locations, and industries.
+
+![Skill Graph](docs/screenshots/skill-graph.png)
+
+### Java Relationship Graph
+
+The Java graph demonstrates how a skill connects to multiple jobs and companies.
+
+![Java Graph](docs/screenshots/java-graph.png)
+
 ## Running Locally
+
+## CognoDB Setup
+
+SkillGraph uses CognoDB as the graph database.
+
+### Create a CognoDB Instance
+
+1. Create an account on CognoDB Cloud.
+2. Create a free database instance.
+3. Copy the database connection URI and generated password.
+4. Use the username `cognodb`.
+5. Configure the credentials as environment variables.
+
+Example:
+
+```text
+COGNODB_URI=bolt+s://<instance-id>.databases.cognodb.cloud
+COGNODB_USERNAME=cognodb
+COGNODB_PASSWORD=<your-password>
 
 ### Backend
 
@@ -422,6 +556,32 @@ USES_TECHNOLOGY
 
 All tests completed successfully.
 ```
+## Benchmark
+
+SkillGraph includes a reproducible benchmark for measuring CognoDB query performance.
+
+The benchmark is located at:
+
+```text
+benchmark/run_benchmark.py
+```
+Results are stored in:
+
+benchmark/results/cognodb_results.csv
+Benchmark Configuration
+Warm-up iterations: 5
+Measured iterations: 30
+
+CognoDB Results
+
+| Query                           |    Average |     Median |        Min |         Max |
+| ------------------------------- | ---------: | ---------: | ---------: | ----------: |
+| Jobs requiring Java             | 347.087 ms | 305.984 ms | 266.377 ms |  914.757 ms |
+| Java jobs in Hyderabad          | 346.051 ms | 296.872 ms | 270.275 ms | 1292.466 ms |
+| Java → Job → Company → Industry | 309.598 ms | 299.801 ms | 280.437 ms |  401.410 ms |
+| Skills related to Java          | 351.526 ms | 317.798 ms | 274.068 ms |  919.598 ms |
+| Java + Spring Boot              | 305.584 ms | 293.905 ms | 278.648 ms |  409.358 ms |
+
 
 ## Tech Stack
 
@@ -462,8 +622,16 @@ Skillgraph/
 │   │   ├── main.py
 │   │   └── queries.py
 │   │
+│   ├── seed/
+│   │   └── ...
+│   │
 │   ├── test_queries.py
 │   └── requirements.txt
+│
+├── benchmark/
+│   ├── run_benchmark.py
+│   └── results/
+│       └── cognodb_results.csv
 │
 └── frontend/
     ├── app/
@@ -478,8 +646,7 @@ Skillgraph/
     │   └── api.ts
     │
     ├── package.json
-    ├── package-lock.json
-    └── ...
+    └── package-lock.json
 ```
 
 ## Why a Graph Database?
@@ -532,6 +699,16 @@ Industry
 can be queried directly using Cypher.
 
 This makes the graph useful for relationship-oriented job discovery rather than only simple field-based filtering.
+
+### Why Graph Instead of a Relational Database?
+
+A relational implementation could store the same entities using tables and foreign keys, but relationship-heavy queries would require multiple JOINs across jobs, skills, companies, locations, and industries.
+
+For example, finding:
+
+```text
+Java → Job → Company → Industry
+```
 
 ## Current Graph Statistics
 

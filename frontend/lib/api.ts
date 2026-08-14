@@ -5,6 +5,8 @@ export interface Job {
   job_id: string;
   job_title: string;
   company: string;
+  city: string | null;
+  industry: string | null;
 }
 
 export interface RelatedSkill {
@@ -112,13 +114,6 @@ export async function getSkillGraph(
   return response.json();
 }
 
-export interface Job {
-  job_id: string;
-  job_title: string;
-  company: string;
-  city: string | null;
-  industry: string | null;
-}
 
 export async function searchJobs(params: {
   skill?: string;
